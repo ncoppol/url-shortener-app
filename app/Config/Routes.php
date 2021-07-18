@@ -34,6 +34,15 @@ $routes->setAutoRoute(true);
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index');
 
+// Web Client routes
+
+// API routes
+$routes->post('api/add', 'Url::addUrl');
+$routes->get('api/top', 'Url::getTop100');
+
+// any other path should be a shorturl
+$routes->get('(:any)', 'Url::redirect');
+
 /*
  * --------------------------------------------------------------------
  * Additional Routing
