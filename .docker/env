@@ -1,0 +1,4 @@
+database.default.hostname = mysql
+database.default.database = url_shortener_db
+database.default.username = access
+database.default.password = abc123

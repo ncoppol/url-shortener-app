@@ -5,7 +5,7 @@ RUN chmod +x /usr/local/bin/install-php-extensions && sync && \
 
 
 COPY . /app
-COPY .docker/.env /app/.env
+COPY .docker/env /app/.env
 COPY .docker/vhost.conf /etc/apache2/sites-available/000-default.conf
 RUN chown -R www-data:www-data /app && a2enmod rewrite
 COPY .docker/wait-for-it.sh /tmp/wait-for-it.sh
