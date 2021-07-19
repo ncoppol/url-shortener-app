@@ -1,6 +1,8 @@
 # URL Shortener App
 
 ## Installation and Setup
+Download or git-clone the repo. 
+
 If you have docker and docker-compose installed, run `docker-compose up` while in the root project directory. Once complete the site should be available at `localhost:8080`. If you are currently using port 8080 or 13306, then you may want to modify the docker-compose.yml file before running.
 
 If you want to install this with your own running web and mysql server:
