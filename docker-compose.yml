@@ -16,6 +16,6 @@ services:
             dockerfile: .docker/Dockerfile
         ports:
             - "8080:80"
-        command: ["/tmp/wait-for-it.sh", "-t 120","mysql:3306", "--", "bash", "/tmp/db.sh"]
+        command: ["/tmp/wait-for-it.sh", "--timeout=120", "mysql:3306", "--", "bash", "/tmp/db.sh"]
         links:
             - mysql
