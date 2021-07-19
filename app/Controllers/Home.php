@@ -6,6 +6,10 @@ class Home extends BaseController
 {
 	public function index()
 	{
-		return view('welcome_message');
+		$data = [
+			'title' => 'Generate Short URL'
+		];
+
+		return view('home_view', $data);
 	}
 }

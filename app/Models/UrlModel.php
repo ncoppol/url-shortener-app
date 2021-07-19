@@ -14,7 +14,7 @@ class UrlModel extends Model
 	protected $returnType           = 'array';
 	protected $useSoftDeletes       = false;
 	protected $protectFields        = true;
-	protected $allowedFields        = ['short','full','clicks'];
+	protected $allowedFields        = ['short','full','clicks','nsfw'];
 
 	// Dates
 	protected $useTimestamps        = false;
@@ -42,7 +42,7 @@ class UrlModel extends Model
 
 
 
-	public function insertUrl(string $fullUrl): string 
+	public function insertUrl(string $fullUrl, bool $nsfw=false): string 
 	{
 		$shortUrl = '';
 		// check if url is valid
@@ -53,7 +53,6 @@ class UrlModel extends Model
 		
 		else 
 		{
-
 			$initialData = Array(
 				'full' => $fullUrl
 			);
@@ -65,8 +64,9 @@ class UrlModel extends Model
 			
 			$updateData = Array(
 				'short' => $shortUrl,
-				'full' => $fullUrl
 			);
+
+			if ($nsfw) $updateData['nsfw'] = '1';
 
 			$this->update($id,$updateData);
 			
@@ -80,21 +80,27 @@ class UrlModel extends Model
 		$data = Array();
 		$this->orderBy('clicks', 'DESC');
 		$this->select('short as short_url, full as full_url, clicks');
-		$data = $this->get(100)->getResultArray();
+		$data = $this->get($count)->getResultArray();
+		foreach($data as &$row) 
+		{
+			$row['short_url'] = base_url() . '/' . $row['short_url'];
+		}
 		return $data;
 	}
 
-	public function getFullUrl(string $shortUrl): string 
+	/*public function getFullUrl(string $shortUrl, $getNsfwFlag = false): array 
 	{
-		$fullString = '';
+		$return = Array();
 		$id = $this->shortUrlToId($shortUrl);
 		$data = $this->find($id);
-		if (isset($data['full'])) {
-			$fullString = $data['full'];
+		if (isset($data['full'])) 
+		{
+			$return[] = $data['full'];
 			$this->addClick($id);
+			if ()
 		}
-		return $fullString;
-	}
+		return $return;
+	}*/
 	
 	public function addClick(int $id): void 
 	{
@@ -120,7 +126,8 @@ class UrlModel extends Model
 		return $shortUrl;
 	}
 
-	public function shortUrlToId(string $shortUrl): int {
+	public function shortUrlToId(string $shortUrl): int 
+	{
 		$id = 0;
 	
 		// convert back to base 10
@@ -129,7 +136,7 @@ class UrlModel extends Model
 			$unicode = ord($char);
 			if (($unicode >= ord('0')) && ($unicode <= ord('9'))) $id = $id*62 + ($unicode - ord('0'));
 			elseif (($unicode >= ord('A')) && ($unicode <= ord('Z'))) $id = $id*62 + ($unicode - ord('A')) + 10;
-			elseif (($unicode >= ord('a')) && ($unicode <= ord('z'))) $id = $id*62 + ($unicode - ord('z')) + 36;
+			elseif (($unicode >= ord('a')) && ($unicode <= ord('z'))) $id = $id*62 + ($unicode - ord('a')) + 36;
 		}
 		return $id;
 	}

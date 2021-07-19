@@ -12,6 +12,8 @@ class Url extends BaseController
 {
 	use ResponseTrait;
 
+
+
 	public function addUrl(): Response 
 	{
 
@@ -21,9 +23,12 @@ class Url extends BaseController
 				'url' => 'required|min_length[3]|max_length[10000]|valid_url'
 			])) 
 			{
+				$nsfw = false;
+				if ($this->request->getVar('nsfw')) $nsfw = true;
+
 				$model = new UrlModel();
 				$fullUrl = prep_url($this->request->getVar('url'));
-				$shortUrl = $model->insertUrl($fullUrl);
+				$shortUrl = $model->insertUrl($fullUrl, $nsfw);
 				$shortUrl = base_url($shortUrl);
 
 			}
@@ -37,6 +42,8 @@ class Url extends BaseController
 		return $this->respondCreated(Array('short_url' => $shortUrl), 'shortened Url successfully created');
 		
 	}
+
+
 
 	public function getTop100(): Response
 	{
@@ -55,7 +62,9 @@ class Url extends BaseController
 
 	}
 
-	public function redirect(): RedirectResponse
+
+
+	public function redirect()
 	{
 		$path = $this->request->getPath();
 
@@ -63,15 +72,30 @@ class Url extends BaseController
 			$model = new UrlModel();
 			try
 			{
-				$fullUrl = $model->getFullUrl($path);
+				$id = $model->shortUrlToId($path);
+				$data = $model->find($id);
+				$fullUrl = $data['full'];
+				$nsfw = $data['nsfw'];
+				$model->addClick($id);
 			}
 			catch (\Exception $e) {}
 
-			if ($fullUrl) return redirect()->to($fullUrl, 301);
+			if ($fullUrl) 
+			{
+				if ($nsfw) 
+				{
+					$nsfwData = [
+						'fullUrl' => $fullUrl
+					];
+					return view('nsfw_view', $nsfwData);
+				}
+				else return redirect()->to($fullUrl, 301);
+			}
+			// just redirect back to home page if we can't find a fullUrl
 			else return redirect()->to(base_url(), 301);
 		}
 
-		return redirect()->to(base_url(), 301);
+		else return redirect()->to(base_url(), 301);
 		
 	}
 }

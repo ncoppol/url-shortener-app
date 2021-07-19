@@ -23,6 +23,11 @@ class InitializeDB extends Migration
 				'type' => 'INT',
 				'constraint' => '11',
 				'default' => '0'
+			],
+			'nsfw' => [
+				'type' => 'TINYINT',
+				'constraint' => '1',
+				'default' => '0'
 			]
 		];
 		$this->forge->addField('id');
