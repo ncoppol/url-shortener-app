@@ -1,63 +1,37 @@
-# CodeIgniter 4 Application Starter
+# URL Shortener App
 
-## What is CodeIgniter?
+## Installation and Setup
+If you have docker and docker-compose installed, run `docker-compose up` while in the root project directory. Once complete the site should be available at `localhost:8080`. If you are currently using port 8080 or 13306, then you may want to modify the docker-compose.yml file before running.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](http://codeigniter.com).
+If you want to install this with your own running web and mysql server:
+* ensure you have all the requirements filled for running CodeIgniter4
+** https://codeigniter4.github.io/userguide/intro/requirements.html
+* install composer and run `composer install` while in the root project directory. 
+* enter db credentials in `app/Config/Database.php` in the $default array. 
+* run `php spark migrate` while in the root project directory to generate the table in the database. 
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+## Challenges
+Took some time to figure out how to guarantee a unique short URL and avoid a collision until I realized the db insertion was guaranteed a unique id. Also took some time getting used to docker and codeigniter since those tools were new to me. Reading through the docs and going through their tutorials helped.
 
-More information about the plans for version 4 can be found in [the announcement](http://forum.codeigniter.com/thread-62615.html) on the forums.
+## Design Decisions
+Codeigniter
+* this got rid of a lot of heavy lifting since db query building, routing, and api responses were built-in
+Short URL generation
+* when short url is requested, we will insert a row into the db table
+* we will retrieve that id and use it to generate the short url
+** we convert the id to base62 to get the short url
+* we will convert the short url back to the base10 to find the id and the proper full url to redirect to
+* the shortest url's will be the first 62 (one character), and then increase each time we hit the power (62^x)
+Table structure
+* one table called urls
+* set id to int , which should allow over 4 billion unique short url's. If we need more we can change it to BIGINT.
+* set full url to max varchar(10000), possible users would input more but most web servers would not process it. Apache and Nginx default max URI is around 8,000
+* put clicks and nsfw flag in same table, select queries shouldn't lock up on updates to rows so don't see any harm in keeping it in same place for now.
+Web client 
+* sends POST requests via the api created in Part1
+* added Bootstrap just to make things a little nicer
 
-The user guide corresponding to this version of the framework can be found
-[here](https://codeigniter4.github.io/userguide/).
-
-## Installation & updates
-
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
-
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
-
-## Setup
-
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
-
-## Important Change with index.php
-
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
-
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
-
-**Please** read the user guide for a better explanation of how CI4 works!
-
-## Repository Management
-
-We use Github issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
-
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
-
-## Server Requirements
-
-PHP version 7.3 or higher is required, with the following extensions installed:
-
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
-
-Additionally, make sure that the following extensions are enabled in your PHP:
-
-- json (enabled by default - don't turn it off)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php)
-- xml (enabled by default - don't turn it off)
+## Future Improvements
+* display more detailed error messages when url is invalid
+* add expirations to short url's so we can free up and reuse id's
+* clean up formatting on the web client

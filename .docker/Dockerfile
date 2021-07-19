@@ -1,7 +1,7 @@
 FROM php:7.3-apache
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 RUN chmod +x /usr/local/bin/install-php-extensions && sync && \
-    install-php-extensions intl mysqli
+    install-php-extensions intl mysqli zip 
 
 
 COPY . /app
@@ -12,3 +12,4 @@ COPY .docker/wait-for-it.sh /tmp/wait-for-it.sh
 RUN chmod +x /tmp/wait-for-it.sh
 COPY .docker/db.sh /tmp/db.sh
 RUN chmod +x /tmp/db.sh
+COPY --from=composer /usr/bin/composer /usr/bin/composer
